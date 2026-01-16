@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RPG Card Combat</title>
+  <script type="module" crossorigin src="./assets/index-DQ-bR1x8.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-c0YyDlm9.css">
+</head>
+
+<body>
+    <div id="app">
+        <button id="btn-music-toggle" class="music-toggle" aria-label="Toggle Music">
+            <span class="icon">🎵</span>
+        </button>
+        <h1>RPG Card Combat</h1>
+
+        <!-- Menu Screen -->
+        <div id="menu-screen" class="screen active">
+            <div class="panel">
+                <h2>Select Mode</h2>
+                <button id="btn-local" class="btn">1 Device (Local)</button>
+                <button id="btn-online" class="btn">2 Devices (Online)</button>
+                <div id="invite-area" class="hidden">
+                    <p>Share this link with your friend:</p>
+                    <div id="invite-link" class="link-box">Generating...</div>
+                    <p>Waiting for player to join...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="arena">
+
+                <!-- Player 1 -->
+                <div class="player-area" id="p1-area">
+                    <div class="player-info">
+                        <h3>Player 1</h3>
+                        <div class="health-bar-container">
+                            <div id="p1-health" class="health-bar" style="width: 100%"></div>
+                        </div>
+                        <div id="p1-hp-text">100/100</div>
+                    </div>
+                    <div class="card" id="p1-card">
+                        <img src="./assets/character 1.webp" alt="Player 1" />
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="controls-area">
+                    <div class="panel">
+                        <h2 id="turn-indicator">Player 1's Turn</h2>
+                        <div class="dice-display" id="dice-value">-</div>
+                        <button id="btn-roll" class="btn">Roll Dice</button>
+                        <div class="log" id="game-log">Game Start!</div>
+                    </div>
+                </div>
+
+                <!-- Player 2 -->
+                <div class="player-area" id="p2-area">
+                    <div class="player-info">
+                        <h3>Player 2</h3>
+                        <div class="health-bar-container">
+                            <div id="p2-health" class="health-bar" style="width: 100%"></div>
+                        </div>
+                        <div id="p2-hp-text">100/100</div>
+                    </div>
+                    <div class="card" id="p2-card">
+                        <img src="./assets/character 2.jpeg" alt="Player 2" />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="sfx-smash" src="/assets/smash.mp3"></audio> <!-- Wishful thinking, will generate or use placeholder -->
+    <audio id="bgm" src="/assets/sounds/Background Music.mp3" loop></audio>
+
+    <!-- Dependencies -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</body>
+
+</html>
