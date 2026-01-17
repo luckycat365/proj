@@ -45,9 +45,13 @@ const ui = {
     log: document.getElementById('game-log')
 };
 
-const ATTACK_SPRITE_SRC_P1 = 'assets/character1_basicattack.png';
-const ATTACK_SPRITE_SRC_P2 = 'assets/character2_basicattack.png';
-const BLOCK_SPRITE_SRC = 'assets/block.png';
+import attack1Src from './assets/character1_basicattack.png';
+import attack2Src from './assets/character2_basicattack.png';
+import blockSrc from './assets/block.png';
+
+const ATTACK_SPRITE_SRC_P1 = attack1Src;
+const ATTACK_SPRITE_SRC_P2 = attack2Src;
+const BLOCK_SPRITE_SRC = blockSrc;
 
 function playOverlaySprite(overlay, src, className, durationMs) {
     if (!overlay) return;
