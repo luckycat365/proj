@@ -48,6 +48,9 @@ const ui = {
 import attack1Src from './assets/character1_basicattack.png';
 import attack2Src from './assets/character2_basicattack.png';
 import blockSrc from './assets/block.png';
+import ch1AttackWav from './assets/sounds/character1_normalattack.wav';
+import ch2AttackWav from './assets/sounds/character2_normalattack.wav';
+import blockWav from './assets/sounds/block.wav';
 
 const ATTACK_SPRITE_SRC_P1 = attack1Src;
 const ATTACK_SPRITE_SRC_P2 = attack2Src;
@@ -168,17 +171,26 @@ function playSmashSynth() {
     noise.stop(t + 0.2);
 }
 
-async function playSmashSound() {
+async function playAttackSound(attacker) {
     // Best effort: make sure audio is running
-    if (audioCtx.state === 'suspended') {
-        try { await audioCtx.resume(); } catch { }
-    }
+    unlockAudio();
 
-    // Use synthesized smash
+    const src = attacker === 'p1' ? ch1AttackWav : ch2AttackWav;
+    const audio = new Audio(src);
     try {
-        playSmashSynth();
-    } catch {
-        // If audio is blocked or context failed
+        await audio.play();
+    } catch (e) {
+        console.error("Failed to play attack sound", e);
+    }
+}
+
+async function playBlockSound() {
+    unlockAudio();
+    const audio = new Audio(blockWav);
+    try {
+        await audio.play();
+    } catch (e) {
+        console.error("Failed to play block sound", e);
     }
 }
 
@@ -425,6 +437,7 @@ function resolveCombat(attacker) {
             }, SMASH_DAMAGE_DELAY);
         } else {
             log("Blocked!");
+            playBlockSound();
             showBlockSprite('p2');
             showFloatingNumber('p2-card', 0);
             setTimeout(() => nextPhase('p2_attack'), 1000);
@@ -445,6 +458,7 @@ function resolveCombat(attacker) {
             }, SMASH_DAMAGE_DELAY);
         } else {
             log("Blocked!");
+            playBlockSound();
             showBlockSprite('p1');
             showFloatingNumber('p1-card', 0);
             setTimeout(() => nextPhase('p1_attack'), 1000);
@@ -453,7 +467,7 @@ function resolveCombat(attacker) {
 }
 
 function animateSmash(attacker) {
-    void playSmashSound();
+    playAttackSound(attacker);
     if (attacker === 'p1') {
         ui.p1Card.classList.add('smash-animation-p1');
         setTimeout(() => {
@@ -480,10 +494,8 @@ function animateSmash(attacker) {
 function applyDamage(target, amount) {
     if (target === 'p1') {
         state.p1Health = Math.max(0, state.p1Health - amount);
-        ui.p1Card.classList.add('shake-animation'); // Extra visual
     } else {
         state.p2Health = Math.max(0, state.p2Health - amount);
-        ui.p2Card.classList.add('shake-animation');
     }
 
     updateUI();

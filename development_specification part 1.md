@@ -7,10 +7,13 @@
 
 # Game mechanism:
 * Turn based game. It looks like this: Player 1 active turn -> Player 2 defensive turn -> Result calculation phase -> Player 2 active turn -> Player 1 defensive turn -> Result calculation -> repeat.
-* The game begins with player 1’s active turn, he should click on a button to roll the dice. The possible numbers of the dice are integer numbers from 1 to 10. The result is the attacking points. Mark that offensive number. After player 1 rolled the attacking dice, it follows the player 2 defensive turn: player 2 rolls the dice also with possible numbers from 1 to 10. Mark that defensive number. Result calculation phase: The damage player 1 causes is the “player 1 offensive dice number” – “player 2 defensive dice number”. If the result is negative, set it to zero. Substract player 2’s health with this damage calculation result. Then it goes to player 2’s active turn and the same mechanism repeats.
+* The game begins with player 1’s active turn, he should click on a button to roll the dice. The possible numbers of the dice are integer numbers from 1 to 10. The result is the attacking points. Mark that offensive number. After player 1 rolled the attacking dice, it follows the player 2 defensive turn: player 2 rolls the dice also with possible numbers from 1 to 10. Mark that defensive number. Result calculation phase: The damage player 1 causes is the “player 1 offensive dice number” – “player 2 defensive dice number”. If the result is negative, set it to zero. This means the attack has been blocked. Substract player 2’s health with this damage calculation result. Then it goes to player 2’s active turn and the same mechanism repeats.
 * Each character starts at the beginning with max health number 100. 
 * End of game: The player whose character’s health falls to zero loses.
 # Game Visual:
 * Use the “character 1.webp” and “character 2.jpeg” in the assets folder as card to represent the characters. Make sure they will appear with same size in the game.
 * In the Result calculation phase where a player causes damage to another player, smash the character card of the attacking player onto the character card of the defending player to animate the attack. Accompanied by a smashing sound.
+* When the character 1 causes a successful damage to another character, use the character1_basicattack.png as the attack animation.
+* When the character 2 causes a successful damage to another character, use the character2_basicattack.png as the attack animation.
+* The character who is hit and takes the damage should shake when damage is caused by the opponent.
 * Use the "background2.webp" as the background picture of the game.
