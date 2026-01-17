@@ -5,14 +5,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RPG Card Combat</title>
-  <script type="module" crossorigin src="./assets/index-Br0vSd_C.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-BGwwUheH.css">
+    <title>仙侠传说</title>
+  <script type="module" crossorigin src="./assets/index-Dt7P3D7S.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CrfG8PLB.css">
 </head>
 
 <body>
     <div id="app">
-        <h1>RPG Card Combat</h1>
+        <h1>仙侠传说</h1>
 
         <!-- Menu Screen -->
         <div id="menu-screen" class="screen active">
@@ -36,7 +36,7 @@
                 <!-- Player 1 -->
                 <div class="player-area" id="p1-area">
                     <div class="player-info">
-                        <h3>Player 1</h3>
+                        <h3>P1</h3>
                         <div class="health-bar-container">
                             <div id="p1-health" class="health-bar" style="width: 100%"></div>
                         </div>
@@ -53,7 +53,9 @@
                     <div class="panel">
                         <h2 id="turn-indicator">Player 1's Turn</h2>
                         <div class="dice-display" id="dice-value">-</div>
-                        <button id="btn-roll" class="btn">Roll Dice</button>
+                        <button id="btn-roll" class="btn-dice">
+                            <img src="./assets/dice-Wjfr2ynl.png" alt="Roll Dice" />
+                        </button>
                         <div class="log" id="game-log">Game Start!</div>
                     </div>
                 </div>
@@ -61,7 +63,7 @@
                 <!-- Player 2 -->
                 <div class="player-area" id="p2-area">
                     <div class="player-info">
-                        <h3>Player 2</h3>
+                        <h3>P2</h3>
                         <div class="health-bar-container">
                             <div id="p2-health" class="health-bar" style="width: 100%"></div>
                         </div>

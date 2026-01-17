@@ -49,12 +49,25 @@ import attack1Src from './assets/character1_basicattack.png';
 import attack2Src from './assets/character2_basicattack.png';
 import blockSrc from './assets/block.png';
 import ch1AttackWav from './assets/sounds/character1_normalattack.wav';
-import ch2AttackWav from './assets/sounds/character2_normalattack.wav';
+import ch2AttackWav from './assets/sounds/character2_normalattack.mp3';
 import blockWav from './assets/sounds/block.wav';
+
+import bgmSrc from './assets/sounds/Backgroundmusic.mp3';
 
 const ATTACK_SPRITE_SRC_P1 = attack1Src;
 const ATTACK_SPRITE_SRC_P2 = attack2Src;
 const BLOCK_SPRITE_SRC = blockSrc;
+
+let bgmAudio = null;
+
+function playBGM() {
+    if (!bgmAudio) {
+        bgmAudio = new Audio(bgmSrc);
+        bgmAudio.loop = true;
+        bgmAudio.volume = 0.5;
+    }
+    bgmAudio.play().catch(e => console.log("BGM autoplay prevented:", e));
+}
 
 function playOverlaySprite(overlay, src, className, durationMs) {
     if (!overlay) return;
@@ -213,7 +226,7 @@ function startGame(mode) {
     state.mode = mode;
     screens.menu.classList.remove('active');
     screens.game.classList.add('active');
-    // Removed automatic BGM play
+    playBGM();
     updateUI();
 }
 
@@ -319,32 +332,32 @@ function updateUI() {
 
     // Turn Description
     if (state.gameOver) {
-        ui.turnIndicator.textContent = state.p1Health <= 0 ? "Player 2 Wins!" : "Player 1 Wins!";
+        ui.turnIndicator.textContent = state.p1Health <= 0 ? "P2 Wins!" : "P1 Wins!";
         ui.btnRoll.disabled = true;
-        ui.btnRoll.textContent = "Game Over";
+        // ui.btnRoll.textContent = "Game Over"; // Removed to keep image button
         return;
     }
 
     switch (state.turn) {
         case 'p1_attack':
-            ui.turnIndicator.textContent = "Player 1 Attack Phase";
+            ui.turnIndicator.textContent = "P1 Attack";
             ui.p1Card.classList.add('active-turn');
             ui.p2Card.classList.add('defending');
             if (state.mode === 'local' || state.role === 'host') isMyTurn = true;
             break;
         case 'p2_defend':
-            ui.turnIndicator.textContent = "Player 2 Defend Phase";
+            ui.turnIndicator.textContent = "P2 Defend";
             ui.p2Card.classList.add('active-turn'); // Defending roll is active action
             if (state.mode === 'local' || state.role === 'guest') isMyTurn = true;
             break;
         case 'p2_attack':
-            ui.turnIndicator.textContent = "Player 2 Attack Phase";
+            ui.turnIndicator.textContent = "P2 Attack";
             ui.p2Card.classList.add('active-turn');
             ui.p1Card.classList.add('defending');
             if (state.mode === 'local' || state.role === 'guest') isMyTurn = true;
             break;
         case 'p1_defend':
-            ui.turnIndicator.textContent = "Player 1 Defend Phase";
+            ui.turnIndicator.textContent = "P1 Defend";
             ui.p1Card.classList.add('active-turn');
             if (state.mode === 'local' || state.role === 'host') isMyTurn = true;
             break;
@@ -352,16 +365,8 @@ function updateUI() {
 
     // Button State
     ui.btnRoll.disabled = !isMyTurn;
-
-    if (!isMyTurn && state.mode === 'online') {
-        ui.btnRoll.textContent = "Waiting for Opponent...";
-    } else {
-        ui.btnRoll.textContent = "Roll Dice (1-10)";
-    }
-
-    if (state.mode === 'local') {
-        ui.btnRoll.textContent = "Roll Dice"; // Local uses same button
-    }
+    ui.btnRoll.style.opacity = isMyTurn ? "1" : "0.5";
+    ui.btnRoll.style.cursor = isMyTurn ? "pointer" : "not-allowed";
 }
 
 function handleRollAction() {
