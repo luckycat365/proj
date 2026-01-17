@@ -15,8 +15,7 @@ const state = {
     p2Dice: 0,
     gameOver: false,
     peer: null,
-    conn: null,
-    isMusicPlaying: false
+    conn: null
 };
 
 // --- DOM Elements ---
@@ -30,42 +29,152 @@ const ui = {
     btnOnline: document.getElementById('btn-online'),
     inviteArea: document.getElementById('invite-area'),
     inviteLink: document.getElementById('invite-link'),
+    btnCopy: document.getElementById('btn-copy'),
     p1HealthBar: document.getElementById('p1-health'),
     p2HealthBar: document.getElementById('p2-health'),
     p1HealthText: document.getElementById('p1-hp-text'),
     p2HealthText: document.getElementById('p2-hp-text'),
     p1Card: document.getElementById('p1-card'),
     p2Card: document.getElementById('p2-card'),
+    p1AttackOverlay: document.getElementById('p1-attack-overlay'),
+    p2AttackOverlay: document.getElementById('p2-attack-overlay'),
     turnIndicator: document.getElementById('turn-indicator'),
     diceValue: document.getElementById('dice-value'),
     btnRoll: document.getElementById('btn-roll'),
     log: document.getElementById('game-log'),
-    bgm: document.getElementById('bgm'),
-    sfxSmash: document.getElementById('sfx-smash'), // Will use WebAudio fallback if fails
-    musicToggle: document.getElementById('btn-music-toggle')
+    log: document.getElementById('game-log')
 };
+
+const ATTACK_SPRITE_SRC_P1 = 'assets/character1_basicattack.png';
+const ATTACK_SPRITE_SRC_P2 = 'assets/character2_basicattack.png';
+const BLOCK_SPRITE_SRC = 'assets/block.png';
+
+function playOverlaySprite(overlay, src, className, durationMs) {
+    if (!overlay) return;
+
+    overlay.src = src;
+
+    overlay.classList.remove('show', 'show-block');
+    // Force reflow so repeated hits/blocks replay the animation
+    void overlay.offsetWidth;
+    overlay.classList.add(className);
+
+    setTimeout(() => {
+        overlay.classList.remove(className);
+    }, durationMs);
+}
+
+function showFloatingNumber(parentId, value) {
+    const parent = document.getElementById(parentId);
+    if (!parent) return;
+
+    const el = document.createElement('div');
+    el.classList.add('damage-number');
+    el.textContent = value;
+
+    if (value === 0 || value === '0') {
+        el.classList.add('blocked');
+    }
+
+    parent.appendChild(el);
+
+    // Remove after animation
+    setTimeout(() => {
+        el.remove();
+    }, 2000);
+}
+
+function showAttackSprite(attacker) {
+    const overlay = attacker === 'p1' ? ui.p2AttackOverlay : ui.p1AttackOverlay;
+    if (!overlay) return;
+
+    playOverlaySprite(
+        overlay,
+        attacker === 'p1' ? ATTACK_SPRITE_SRC_P1 : ATTACK_SPRITE_SRC_P2,
+        'show',
+        700
+    );
+}
+
+function showBlockSprite(defender) {
+    const overlay = defender === 'p1' ? ui.p1AttackOverlay : ui.p2AttackOverlay;
+    playOverlaySprite(overlay, BLOCK_SPRITE_SRC, 'show-block', 560);
+}
 
 // --- Audio Context for Procedural Sound ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playSmashSound() {
-    // Try playing file first
-    const played = ui.sfxSmash.play().catch(() => false);
-    if (!played) {
-        // Fallback: Synthesized noise
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+let audioUnlocked = false;
 
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(100, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
 
-        gain.gain.setValueAtTime(1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+    // Resume WebAudio (required on many browsers until a user gesture)
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => { });
+    }
+}
 
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.5);
+function playSmashSynth() {
+    const t = audioCtx.currentTime;
+
+    // 1. Low frequency "thud" (impact)
+    const osc = audioCtx.createOscillator();
+    const oscGain = audioCtx.createGain();
+
+    osc.connect(oscGain);
+    oscGain.connect(audioCtx.destination);
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(100, t);
+    osc.frequency.exponentialRampToValueAtTime(20, t + 0.15);
+
+    oscGain.gain.setValueAtTime(1.0, t);
+    oscGain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+
+    osc.start(t);
+    osc.stop(t + 0.3);
+
+    // 2. Noise "crunch" (texture)
+    const bufferSize = audioCtx.sampleRate * 0.5; // 0.5 seconds buffer
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.setValueAtTime(1000, t);
+    noiseFilter.frequency.exponentialRampToValueAtTime(100, t + 0.2);
+
+    const noiseGain = audioCtx.createGain();
+
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+
+    noiseGain.gain.setValueAtTime(0.8, t);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+
+    noise.start(t);
+    noise.stop(t + 0.2);
+}
+
+async function playSmashSound() {
+    // Best effort: make sure audio is running
+    if (audioCtx.state === 'suspended') {
+        try { await audioCtx.resume(); } catch { }
+    }
+
+    // Use synthesized smash
+    try {
+        playSmashSynth();
+    } catch {
+        // If audio is blocked or context failed
     }
 }
 
@@ -74,11 +183,7 @@ function init() {
     ui.btnLocal.addEventListener('click', () => startGame('local'));
     ui.btnOnline.addEventListener('click', () => startOnlineHost());
     ui.btnRoll.addEventListener('click', handleRollAction);
-    ui.musicToggle.addEventListener('click', toggleMusic);
-
-    // Initial music state
-    ui.bgm.volume = 0.5;
-    ui.musicToggle.classList.add('muted');
+    ui.btnCopy.addEventListener('click', copyInviteLink);
 
     // Check URL for join
     const params = new URLSearchParams(window.location.search);
@@ -160,6 +265,22 @@ function handleNetworkData(data) {
 }
 
 // --- Game Logic ---
+
+function copyInviteLink() {
+    const link = ui.inviteLink.textContent;
+    if (!link || link === 'Generating...') return;
+
+    navigator.clipboard.writeText(link).then(() => {
+        const originalText = ui.btnCopy.textContent;
+        ui.btnCopy.textContent = "Copied!";
+        setTimeout(() => {
+            ui.btnCopy.textContent = originalText;
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy text: ', err);
+    });
+}
+
 function updateUI() {
     // Update Health Bars
     const p1Pct = Math.max(0, (state.p1Health / MAX_HEALTH) * 100);
@@ -228,6 +349,7 @@ function updateUI() {
 }
 
 function handleRollAction() {
+    unlockAudio();
     const value = Math.floor(Math.random() * 10) + 1;
     sendData({ type: 'roll', value });
     performRoll(value, true);
@@ -294,10 +416,13 @@ function resolveCombat(attacker) {
             animateSmash('p1');
             setTimeout(() => {
                 applyDamage('p2', damage);
+                showFloatingNumber('p2-card', damage);
                 nextPhase('p2_attack');
             }, SMASH_DAMAGE_DELAY);
         } else {
             log("Blocked!");
+            showBlockSprite('p2');
+            showFloatingNumber('p2-card', 0);
             setTimeout(() => nextPhase('p2_attack'), 1000);
         }
     } else {
@@ -311,21 +436,25 @@ function resolveCombat(attacker) {
             animateSmash('p2');
             setTimeout(() => {
                 applyDamage('p1', damage);
+                showFloatingNumber('p1-card', damage);
                 nextPhase('p1_attack');
             }, SMASH_DAMAGE_DELAY);
         } else {
             log("Blocked!");
+            showBlockSprite('p1');
+            showFloatingNumber('p1-card', 0);
             setTimeout(() => nextPhase('p1_attack'), 1000);
         }
     }
 }
 
 function animateSmash(attacker) {
-    playSmashSound();
+    void playSmashSound();
     if (attacker === 'p1') {
         ui.p1Card.classList.add('smash-animation-p1');
         setTimeout(() => {
             ui.p2Card.classList.add('shake-animation');
+            showAttackSprite('p1');
         }, 400); // Impact time
         setTimeout(() => {
             ui.p1Card.classList.remove('smash-animation-p1');
@@ -335,6 +464,7 @@ function animateSmash(attacker) {
         ui.p2Card.classList.add('smash-animation-p2');
         setTimeout(() => {
             ui.p1Card.classList.add('shake-animation');
+            showAttackSprite('p2');
         }, 400);
         setTimeout(() => {
             ui.p2Card.classList.remove('smash-animation-p2');
@@ -374,21 +504,7 @@ function log(msg) {
     console.log(msg);
 }
 
-function toggleMusic() {
-    state.isMusicPlaying = !state.isMusicPlaying;
 
-    if (state.isMusicPlaying) {
-        ui.bgm.play().then(() => {
-            ui.musicToggle.classList.remove('muted');
-        }).catch(err => {
-            console.error("Audio play failed:", err);
-            state.isMusicPlaying = false;
-        });
-    } else {
-        ui.bgm.pause();
-        ui.musicToggle.classList.add('muted');
-    }
-}
 
 // Start
 init();

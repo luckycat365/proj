@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RPG Card Combat</title>
     <link rel="stylesheet" href="./style.css" />
@@ -11,9 +11,6 @@
 
 <body>
     <div id="app">
-        <button id="btn-music-toggle" class="music-toggle" aria-label="Toggle Music">
-            <span class="icon">🎵</span>
-        </button>
         <h1>RPG Card Combat</h1>
 
         <!-- Menu Screen -->
@@ -25,6 +22,7 @@
                 <div id="invite-area" class="hidden">
                     <p>Share this link with your friend:</p>
                     <div id="invite-link" class="link-box">Generating...</div>
+                    <button id="btn-copy" class="btn btn-small">Copy Link</button>
                     <p>Waiting for player to join...</p>
                 </div>
             </div>
@@ -44,7 +42,8 @@
                         <div id="p1-hp-text">100/100</div>
                     </div>
                     <div class="card" id="p1-card">
-                        <img src="/assets/character 1.webp" alt="Player 1" />
+                        <img src="assets/character 1.webp" alt="Player 1" />
+                        <img id="p1-attack-overlay" class="attack-sprite" alt="" aria-hidden="true" />
                     </div>
                 </div>
 
@@ -68,7 +67,8 @@
                         <div id="p2-hp-text">100/100</div>
                     </div>
                     <div class="card" id="p2-card">
-                        <img src="/assets/character 2.jpeg" alt="Player 2" />
+                        <img src="assets/character 2.jpeg" alt="Player 2" />
+                        <img id="p2-attack-overlay" class="attack-sprite" alt="" aria-hidden="true" />
                     </div>
                 </div>
 
@@ -78,8 +78,7 @@
     </div>
 
     <!-- Audio Elements -->
-    <audio id="sfx-smash" src="/assets/smash.mp3"></audio> <!-- Wishful thinking, will generate or use placeholder -->
-    <audio id="bgm" src="/assets/sounds/Background Music.mp3" loop></audio>
+    <!-- Audio Elements Removed - Using Procedural Audio -->
 
     <!-- Dependencies -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
