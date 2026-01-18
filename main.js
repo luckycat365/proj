@@ -51,6 +51,7 @@ import blockSrc from './assets/block.png';
 import ch1AttackWav from './assets/sounds/character1_normalattack.wav';
 import ch2AttackWav from './assets/sounds/character2_normalattack.mp3';
 import blockWav from './assets/sounds/block.wav';
+import diceWav from './assets/sounds/dice.wav';
 
 import bgmSrc from './assets/sounds/Backgroundmusic.mp3';
 
@@ -64,7 +65,7 @@ function playBGM() {
     if (!bgmAudio) {
         bgmAudio = new Audio(bgmSrc);
         bgmAudio.loop = true;
-        bgmAudio.volume = 0.5;
+        bgmAudio.volume = 0.2;
     }
     bgmAudio.play().catch(e => console.log("BGM autoplay prevented:", e));
 }
@@ -204,6 +205,16 @@ async function playBlockSound() {
         await audio.play();
     } catch (e) {
         console.error("Failed to play block sound", e);
+    }
+}
+
+async function playDiceSound() {
+    unlockAudio();
+    const audio = new Audio(diceWav);
+    try {
+        await audio.play();
+    } catch (e) {
+        console.error("Failed to play dice sound", e);
     }
 }
 
@@ -371,9 +382,28 @@ function updateUI() {
 
 function handleRollAction() {
     unlockAudio();
-    const value = Math.floor(Math.random() * 10) + 1;
-    sendData({ type: 'roll', value });
-    performRoll(value, true);
+    // Play sound
+    playDiceSound();
+
+    ui.btnRoll.disabled = true; // Disable button during animation
+
+    const duration = 1100;
+    const intervalTime = 50;
+    const startTime = Date.now();
+
+    const intervalId = setInterval(() => {
+        const randomVal = Math.floor(Math.random() * 10) + 1;
+        ui.diceValue.textContent = randomVal;
+
+        if (Date.now() - startTime >= duration) {
+            clearInterval(intervalId);
+            const finalValue = Math.floor(Math.random() * 10) + 1;
+
+            // Finalize
+            sendData({ type: 'roll', value: finalValue });
+            performRoll(finalValue, true);
+        }
+    }, intervalTime);
 }
 
 function performRoll(value, isMe) {

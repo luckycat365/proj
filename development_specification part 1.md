@@ -12,6 +12,9 @@
 * End of game: The player whose character’s health falls to zero loses.
 # Game Visual:
 * Use the “character 1.webp” and “character 2.jpeg” in the assets folder as card to represent the characters. Make sure they will appear with same size in the game.
+* When it comes to the turn of player 1, highlight the card of player 1 in the game. When it comes to the turn of player 2, highlight the card of player 2 in the game.
+* The button to roll the dice should be represented by the image "dice.png".
+* After clicking on the dice button, generate a random sequence of numbers between 1 and 10 for 1.1 seconds, display it on the screen, the last number is the result. When doing this, play the sound "dice.wav".
 * In the Result calculation phase where a player causes damage to another player, smash the character card of the attacking player onto the character card of the defending player to animate the attack. Accompanied by a smashing sound.
 * When the character 1 causes a successful damage to another character, use the character1_basicattack.png as the attack animation.
 * When the character 2 causes a successful damage to another character, use the character2_basicattack.png as the attack animation.
