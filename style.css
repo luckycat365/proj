@@ -287,8 +287,11 @@ h2 {
 
 .card.active-turn {
   --glow-color: #FFD700;
-  /* Gold for better visibility */
-  box-shadow: 0 0 40px var(--glow-color), 0 0 80px rgba(255, 215, 0, 0.4);
+  --glow-shadow: rgba(255, 215, 0, 0.4);
+  --glow-pulse-from: rgba(255, 215, 0, 0.3);
+  --glow-pulse-to: rgba(255, 215, 0, 0.5);
+
+  box-shadow: 0 0 40px var(--glow-color), 0 0 80px var(--glow-shadow);
   border-color: var(--glow-color);
   border-width: 4px;
   scale: 1.5;
@@ -297,13 +300,20 @@ h2 {
   animation: activePulse 1.5s infinite alternate ease-in-out;
 }
 
+.card.active-turn.defense-glow {
+  --glow-color: #00d2ff;
+  --glow-shadow: rgba(0, 210, 255, 0.4);
+  --glow-pulse-from: rgba(0, 210, 255, 0.3);
+  --glow-pulse-to: rgba(0, 210, 255, 0.5);
+}
+
 @keyframes activePulse {
   from {
-    box-shadow: 0 0 25px var(--glow-color), 0 0 50px rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 25px var(--glow-color), 0 0 50px var(--glow-pulse-from);
   }
 
   to {
-    box-shadow: 0 0 50px var(--glow-color), 0 0 100px rgba(255, 215, 0, 0.5), inset 0 0 20px var(--glow-color);
+    box-shadow: 0 0 50px var(--glow-color), 0 0 100px var(--glow-pulse-to), inset 0 0 20px var(--glow-color);
   }
 }
 

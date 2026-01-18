@@ -336,8 +336,8 @@ function updateUI() {
     ui.p2HealthText.textContent = `${state.p2Health}/${MAX_HEALTH}`;
 
     // Highlight Active Card
-    ui.p1Card.classList.remove('active-turn', 'defending');
-    ui.p2Card.classList.remove('active-turn', 'defending');
+    ui.p1Card.classList.remove('active-turn', 'defending', 'defense-glow');
+    ui.p2Card.classList.remove('active-turn', 'defending', 'defense-glow');
 
     let isMyTurn = false;
 
@@ -358,7 +358,7 @@ function updateUI() {
             break;
         case 'p2_defend':
             ui.turnIndicator.textContent = "P2 Defend";
-            ui.p2Card.classList.add('active-turn'); // Defending roll is active action
+            ui.p2Card.classList.add('active-turn', 'defense-glow');
             if (state.mode === 'local' || state.role === 'guest') isMyTurn = true;
             break;
         case 'p2_attack':
@@ -369,7 +369,7 @@ function updateUI() {
             break;
         case 'p1_defend':
             ui.turnIndicator.textContent = "P1 Defend";
-            ui.p1Card.classList.add('active-turn');
+            ui.p1Card.classList.add('active-turn', 'defense-glow');
             if (state.mode === 'local' || state.role === 'host') isMyTurn = true;
             break;
     }
