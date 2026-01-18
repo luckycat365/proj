@@ -558,11 +558,11 @@ h2 {
   }
 
   .smash-animation-p1 {
-    animation: smashLeft 0.8s ease-in-out;
+    animation: smashLeft 0.8s ease-in-out !important;
   }
 
   .smash-animation-p2 {
-    animation: smashRight 0.8s ease-in-out;
+    animation: smashRight 0.8s ease-in-out !important;
   }
 }
 
@@ -607,11 +607,11 @@ h2 {
   }
 
   .smash-animation-p1 {
-    animation: smashDown 0.8s ease-in-out;
+    animation: smashDown 0.8s ease-in-out !important;
   }
 
   .smash-animation-p2 {
-    animation: smashUp 0.8s ease-in-out;
+    animation: smashUp 0.8s ease-in-out !important;
   }
 }
 

@@ -48,6 +48,7 @@ const ui = {
 import attack1Src from './assets/character1_basicattack.png';
 import attack2Src from './assets/character2_basicattack.png';
 import blockSrc from './assets/block.png';
+import counterAttackSrc from './assets/counterattack.png';
 import ch1AttackWav from './assets/sounds/character1_normalattack.wav';
 import ch2AttackWav from './assets/sounds/character2_normalattack.mp3';
 import blockWav from './assets/sounds/block.wav';
@@ -58,6 +59,7 @@ import bgmSrc from './assets/sounds/Backgroundmusic.mp3';
 const ATTACK_SPRITE_SRC_P1 = attack1Src;
 const ATTACK_SPRITE_SRC_P2 = attack2Src;
 const BLOCK_SPRITE_SRC = blockSrc;
+const COUNTER_ATTACK_SPRITE_SRC = counterAttackSrc;
 
 let bgmAudio = null;
 
@@ -120,6 +122,12 @@ function showAttackSprite(attacker) {
 function showBlockSprite(defender) {
     const overlay = defender === 'p1' ? ui.p1AttackOverlay : ui.p2AttackOverlay;
     playOverlaySprite(overlay, BLOCK_SPRITE_SRC, 'show-block', 560);
+}
+
+function showCounterAttackSprite(target) {
+    const overlay = target === 'p1' ? ui.p1AttackOverlay : ui.p2AttackOverlay;
+    // Using a slightly longer duration for counter attack
+    playOverlaySprite(overlay, COUNTER_ATTACK_SPRITE_SRC, 'show-block', 800);
 }
 
 // --- Audio Context for Procedural Sound ---
@@ -451,63 +459,65 @@ function advanceTurn() {
 }
 
 function resolveCombat(attacker) {
-    // Logic: Damage = Attack - Defend
-    let damage = 0;
-    let attackerName = "";
-    let defenderName = "";
+    // Logic: 
+    // diff = AttackerDice - DefenderDice
+    // if diff > 0: damage = diff to Defender
+    // if -2 <= diff <= 0: Blocked (damage 0)
+    // if diff < -2: Counter Attack (damage |diff| to Attacker)
 
-    if (attacker === 'p1') {
-        damage = Math.max(0, state.p1Dice - state.p2Dice);
-        attackerName = "Player 1";
-        defenderName = "Player 2";
-        log(`Result: ${state.p1Dice} (ATK) vs ${state.p2Dice} (DEF). Damage: ${damage}`);
+    // Clear highlights immediately so animation is clean
+    ui.p1Card.classList.remove('active-turn', 'defending', 'defense-glow');
+    ui.p2Card.classList.remove('active-turn', 'defending', 'defense-glow');
 
-        // Animate Smash
-        if (damage > 0) {
-            animateSmash('p1');
-            setTimeout(() => {
-                applyDamage('p2', damage);
-                showFloatingNumber('p2-card', damage);
-                nextPhase('p2_attack');
-            }, SMASH_DAMAGE_DELAY);
-        } else {
-            log("Blocked!");
-            playBlockSound();
-            showBlockSprite('p2');
-            showFloatingNumber('p2-card', 0);
-            setTimeout(() => nextPhase('p2_attack'), 1000);
-        }
+    const isP1Attacking = attacker === 'p1';
+    const attackerDice = isP1Attacking ? state.p1Dice : state.p2Dice;
+    const defenderDice = isP1Attacking ? state.p2Dice : state.p1Dice;
+    const diff = attackerDice - defenderDice;
+
+    const defender = isP1Attacking ? 'p2' : 'p1';
+    const attackerId = isP1Attacking ? 'p1' : 'p2';
+
+    if (diff > 0) {
+        const damage = diff;
+        log(`Result: ${attackerDice} (ATK) vs ${defenderDice} (DEF). Damage: ${damage}`);
+        animateSmash(attackerId, false);
+        setTimeout(() => {
+            applyDamage(defender, damage);
+            showFloatingNumber(`${defender}-card`, damage);
+            nextPhase(isP1Attacking ? 'p2_attack' : 'p1_attack');
+        }, SMASH_DAMAGE_DELAY);
+    } else if (diff >= -2) {
+        log(`Result: ${attackerDice} (ATK) vs ${defenderDice} (DEF). Blocked!`);
+        playBlockSound();
+        showBlockSprite(defender);
+        showFloatingNumber(`${defender}-card`, 0);
+        setTimeout(() => nextPhase(isP1Attacking ? 'p2_attack' : 'p1_attack'), 1000);
     } else {
-        damage = Math.max(0, state.p2Dice - state.p1Dice);
-        attackerName = "Player 2";
-        defenderName = "Player 1";
-        log(`Result: ${state.p2Dice} (ATK) vs ${state.p1Dice} (DEF). Damage: ${damage}`);
+        const counterDamage = Math.abs(diff);
+        log(`Result: ${attackerDice} (ATK) vs ${defenderDice} (DEF). COUNTER ATTACK! (-${counterDamage} HP)`);
 
-        // Animate Smash
-        if (damage > 0) {
-            animateSmash('p2');
-            setTimeout(() => {
-                applyDamage('p1', damage);
-                showFloatingNumber('p1-card', damage);
-                nextPhase('p1_attack');
-            }, SMASH_DAMAGE_DELAY);
-        } else {
-            log("Blocked!");
-            playBlockSound();
-            showBlockSprite('p1');
-            showFloatingNumber('p1-card', 0);
-            setTimeout(() => nextPhase('p1_attack'), 1000);
-        }
+        // Smash defensive player onto offensive player
+        animateSmash(defender, true);
+
+        setTimeout(() => {
+            applyDamage(attackerId, counterDamage);
+            showFloatingNumber(`${attackerId}-card`, counterDamage);
+            nextPhase(isP1Attacking ? 'p2_attack' : 'p1_attack');
+        }, SMASH_DAMAGE_DELAY);
     }
 }
 
-function animateSmash(attacker) {
+function animateSmash(attacker, isCounter = false) {
     playAttackSound(attacker);
     if (attacker === 'p1') {
         ui.p1Card.classList.add('smash-animation-p1');
         setTimeout(() => {
             ui.p2Card.classList.add('shake-animation');
-            showAttackSprite('p1');
+            if (isCounter) {
+                showCounterAttackSprite('p2');
+            } else {
+                showAttackSprite('p1');
+            }
         }, 400); // Impact time
         setTimeout(() => {
             ui.p1Card.classList.remove('smash-animation-p1');
@@ -517,7 +527,11 @@ function animateSmash(attacker) {
         ui.p2Card.classList.add('smash-animation-p2');
         setTimeout(() => {
             ui.p1Card.classList.add('shake-animation');
-            showAttackSprite('p2');
+            if (isCounter) {
+                showCounterAttackSprite('p1');
+            } else {
+                showAttackSprite('p2');
+            }
         }, 400);
         setTimeout(() => {
             ui.p2Card.classList.remove('smash-animation-p2');

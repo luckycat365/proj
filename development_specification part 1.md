@@ -7,7 +7,11 @@
 
 # Game mechanism:
 * Turn based game. It looks like this: Player 1 attack turn -> Player 2 defensive turn -> Result calculation phase -> Player 2 attack turn -> Player 1 defensive turn -> Result calculation -> repeat.
-* The game begins with player 1’s attack turn, he should click on a button to roll the dice. The possible numbers of the dice are integer numbers from 1 to 10. The result is the attacking points. Mark that offensive number. After player 1 rolled the attacking dice, it follows the player 2 defensive turn: player 2 rolls the dice also with possible numbers from 1 to 10. Mark that defensive number. Result calculation phase: The damage player 1 causes is the “player 1 offensive dice number” – “player 2 defensive dice number”. If the result is negative, set it to zero. This means the attack has been blocked. Substract player 2’s health with this damage calculation result. Then it goes to player 2’s attack turn and the same mechanism repeats.
+* The game begins with player 1’s attack turn, he should click on a button to roll the dice. The possible numbers of the dice are integer numbers from 1 to 10. The result is the attacking points. Mark that offensive number. After player 1 rolled the attacking dice, it follows the player 2 defensive turn: player 2 rolls the dice also with possible numbers from 1 to 10. Mark that defensive number. Result calculation phase: Let the result be “attacking dice number” – “defensive dice number”. 
+    * If result > 0: Substract the defensive player’s health with this result.
+    * If -2 <= result <= 0: The attack has been blocked (damage is zero).
+    * If result < -2: Counter Attack is triggered. The defensive player causes damage to the attacking player. The damage value is the absolute value of the result. Use "counterattack.png" as the visual effect.
+* Then it goes to the next player's attack turn and the same mechanism repeats.
 * Each character starts at the beginning with max health number 100. 
 * End of game: The player whose character’s health falls to zero loses.
 # Game Visual:
